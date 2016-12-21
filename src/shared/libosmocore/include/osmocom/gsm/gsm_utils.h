@@ -58,6 +58,7 @@ enum gsm_band gsm_band_parse(const char *mhz);
 
 int gsm_7bit_decode(char *decoded, const uint8_t *user_data, uint8_t length);
 int gsm_7bit_decode_hdr(char *decoded, const uint8_t *user_data, uint8_t length, uint8_t ud_hdr_ind);
+uint16_t gsm_ucs2_decode_n(char *decoded, const uint16_t decoded_buf_length, const uint8_t *user_data, const uint8_t length);
 int gsm_7bit_encode(uint8_t *result, const char *data);
 
 int gsm_septets2octets(uint8_t *result, uint8_t *rdata, uint8_t septet_len, uint8_t padding);

@@ -241,6 +241,7 @@ static int gsm340_rx_tpdu(struct gsm_trans *trans, struct msgb *msg)
 	smsp++;
 
 	/* length in bytes of the originate address */
+	/* FIXME: parsing error with short origin number */
 	oa_len_bytes = 2 + *smsp/2 + *smsp%2;
 	if (oa_len_bytes > 12) {
 		LOGP(DLSMS, LOGL_ERROR, "Originate Address > 12 bytes ?!?\n");
@@ -286,6 +287,7 @@ static int gsm340_rx_tpdu(struct gsm_trans *trans, struct msgb *msg)
 			break;
 		case DCS_8BIT_DATA:
 		case DCS_UCS2:
+			gsm_ucs2_decode_n(gsms->text, 256, smsp, gsms->user_data_len);
 		case DCS_NONE:
 			break;
 		}
