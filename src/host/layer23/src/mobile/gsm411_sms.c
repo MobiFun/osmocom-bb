@@ -113,7 +113,9 @@ struct gsm_sms *sms_from_text(const char *receiver, int dcs, const char *text)
 	sms->data_coding_scheme = dcs;
 	strncpy(sms->address, receiver, sizeof(sms->address)-1);
 	/* Generate user_data */
-	sms->user_data_len = gsm_7bit_encode(sms->user_data, sms->text);
+	//sms->user_data_len = gsm_7bit_encode(sms->user_data, sms->text);
+	sms->user_data_len = gsm_ucs2_encode_n(sms->user_data, sizeof(sms->user_data),
+						sms->text, strlen(sms->text));
 
 	return sms;
 }
@@ -705,7 +707,7 @@ error:
 int sms_send(struct osmocom_ms *ms, const char *sms_sca, const char *number,
 	const char *text)
 {
-	struct gsm_sms *sms = sms_from_text(number, 0, text);
+	struct gsm_sms *sms = sms_from_text(number, 8, text);//8 for UCS2
 
 	if (!sms)
 		return -ENOMEM;
