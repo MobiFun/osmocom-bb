@@ -271,6 +271,60 @@ int gsm_7bit_encode(uint8_t *result, const char *data)
 	return y;
 }
 
+static __inline__ int
+ucs2_write( uint8_t  *ucs2, int  offset, uint16_t  v )
+{
+    if (ucs2) {
+        ucs2[offset+0] = (uint8_t) (v >> 8);
+        ucs2[offset+1] = (uint8_t) (v & 0xff);
+    }
+    return 2;
+}
+
+uint16_t gsm_ucs2_encode_n(uint8_t *ucs2_buffer, uint16_t ucs2_buffer_size, uint8_t *utf8_string, uint16_t utf8_string_len)
+{
+	uint16_t i, j, ucs2_string_size;
+
+	for (i = 0, j = 0; i < utf8_string_len; i++) {
+		uint8_t c = utf8_string[i];
+		if (j >= ucs2_buffer_size) {
+			/* input too long */
+			return -1;
+		}
+		if (c <= 0x7F) {
+			ucs2_write(ucs2_buffer, j, c);
+			j += 2;
+		} else if (i == utf8_string_len - 1 ||
+			   j >= ucs2_buffer_size - 1) {
+			/* incomplete surrogate */
+			return -1;
+		} else {
+			uint8_t c2 = utf8_string[++i];
+			if ((c & 0xE0) == 0xC0) {
+				/* two-byte encoding */
+				ucs2_write(ucs2_buffer, j,
+					     ((c & 0x1F) << 6) | (c2 & 0x3F));
+				j += 2;
+			} else if (i == utf8_string_len ||
+				   j >= ucs2_buffer_size - 1) {
+				/* incomplete surrogate */
+				return -1;
+			} else {
+				/* three-byte encoding */
+				uint8_t c3 = utf8_string[++i];
+				ucs2_write(ucs2_buffer, j,
+					     ((c & 0xF) << 12) |
+					     ((c2 & 0x3F) << 6) | (c3 & 0x3F));
+				j += 2;
+			}
+		}
+	}
+
+	ucs2_string_size = j;
+
+	return ucs2_string_size;
+}
+
 uint16_t gsm_ucs2_decode_n(char *decoded, const uint16_t decoded_buf_length, const uint8_t *user_data, const uint8_t length)
 {
     uint16_t i, j = 0;

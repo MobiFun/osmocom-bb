@@ -60,6 +60,7 @@ int gsm_7bit_decode(char *decoded, const uint8_t *user_data, uint8_t length);
 int gsm_7bit_decode_hdr(char *decoded, const uint8_t *user_data, uint8_t length, uint8_t ud_hdr_ind);
 uint16_t gsm_ucs2_decode_n(char *decoded, const uint16_t decoded_buf_length, const uint8_t *user_data, const uint8_t length);
 int gsm_7bit_encode(uint8_t *result, const char *data);
+uint16_t gsm_ucs2_encode_n(uint8_t *ucs2_buffer, uint16_t ucs2_buffer_size, uint8_t *utf8_string, uint16_t utf8_string_len);
 
 int gsm_septets2octets(uint8_t *result, uint8_t *rdata, uint8_t septet_len, uint8_t padding);
 int gsm_septet_encode(uint8_t *result, const char *data);

@@ -231,6 +231,7 @@ static int gsm340_rx_tpdu(struct gsm_trans *trans, struct msgb *msg)
 	uint8_t oa_len_bytes;
 	uint8_t address_lv[12]; /* according to 03.40 / 9.1.2.5 */
 	int rc = 0;
+	int ud_hdr_len = 0;
 
 	gsms = sms_alloc();
 
@@ -257,8 +258,8 @@ static int gsm340_rx_tpdu(struct gsm_trans *trans, struct msgb *msg)
 	/* convert to real number */
 	if (((smsp[1] & 0x70) >> 4) == 1)
 		strcpy(gsms->address, "+");
-	else if (((smsp[1] & 0x70) >> 4) == 2)
-		strcpy(gsms->address, "0");
+	else if (((smsp[1] & 0x70) >> 4) == 2)//Type of number: National
+		gsms->address[0] = '\0';
 	else
 		gsms->address[0] = '\0';
 	gsm48_decode_bcd_number(gsms->address + strlen(gsms->address),
@@ -277,9 +278,15 @@ static int gsm340_rx_tpdu(struct gsm_trans *trans, struct msgb *msg)
 	/* get timestamp */
 	gsms->time = gsm340_scts(smsp);
 	smsp += 7;
+	
+	gsms->user_data_len = *smsp++;
+
+	if (gsms->ud_hdr_ind) {
+		ud_hdr_len = *smsp++;
+		smsp = smsp + ud_hdr_len;
+	}
 
 	/* user data */
-	gsms->user_data_len = *smsp++;
 	if (gsms->user_data_len) {
 		memcpy(gsms->user_data, smsp, gsms->user_data_len);
 
